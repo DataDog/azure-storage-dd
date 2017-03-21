@@ -1,5 +1,5 @@
 #azure
-from azure.storage import CloudStorageAccount, Metrics
+from azure.storage import CloudStorageAccount, Metrics, RetentionPolicy
 
 #package
 from cli.storage_sas_generator import StorageSASGenerator
@@ -16,20 +16,24 @@ class StorageCLI(object):
             "storage_account_name", help="Name of the storage account")
         monitor_account_parser.add_argument(
             "storage_account_key", help="Primary Access key of the storage account")
+        monitor_account_parser.add_argument(
+            "metric_table_retention_period", help="Metric table data retention period (in days) for minute level tables")
         monitor_account_parser.set_defaults(func=self.setup_for_monitoring)
 
     def setup_for_monitoring(self, args):
         storage_account_name = args.storage_account_name
         storage_account_key = args.storage_account_key
+        metric_table_retention_period = int(args.metric_table_retention_period)
         sc = StorageSASGenerator(storage_account_name, storage_account_key)
         sas_token = sc.get_token()
-        self._turn_on_minute_metrics(storage_account_name, storage_account_key)
+        self._turn_on_minute_metrics(storage_account_name, storage_account_key, metric_table_retention_period)
         print "One minute metrics have been enabled. Add the following to Datadog's Azure Storage integration configuration"
         print "Storage account: %s \nStorage SAS Token: %s" % (storage_account_name, sas_token)
 
-    def _turn_on_minute_metrics(self, name, key):
+    def _turn_on_minute_metrics(self, name, key, metric_table_retention_period):
         account = CloudStorageAccount(account_name=name, account_key=key, sas_token=None)
-        metrics = Metrics(enabled=True, include_apis=True)
+        retention_policy = RetentionPolicy(enabled=True, days=metric_table_retention_period)
+        metrics = Metrics(enabled=True, include_apis=True, retention_policy=retention_policy)
         table_service = account.create_table_service()
         table_service.set_table_service_properties(minute_metrics=metrics)
         blob_service = account.create_page_blob_service()
