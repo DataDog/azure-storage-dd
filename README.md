@@ -12,7 +12,7 @@ This will turn on minute level metrics for your storage account, which will crea
 
 ## To run this script
 
-1. This script requires python, so please install it if you don't already have it. [Install Python](https://www.python.org/downloads/).
+1. This script requires python 2.7, so please install it if you don't already have it. [Install Python](https://www.python.org/downloads/).
 
 2. Since this depends on the [azure-storage](https://github.com/Azure/azure-storage-python) library, we recommend that you use a [virtual environment](https://docs.python.org/3/tutorial/venv.html) to run the script.  Here is how:
 
